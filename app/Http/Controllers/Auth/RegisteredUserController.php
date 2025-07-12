@@ -42,20 +42,22 @@ class RegisteredUserController extends Controller
             'password' => Hash::make($request->password),
             'role' => $request->role,
         ]);
+        $user->assignRole($request->role);
+        return redirect()->route('login')->with('success', 'Usuario registrado correctamente. Ahora puedes iniciar sesión.');
 
         event(new Registered($user));
 
         Auth::login($user);
-    
-        // 👇 Redirigir según el rol ya actualizado
-    if ($user->role === 'conductor') {
-        return redirect()->route('driver.dashboard');
-    }else {
-        return redirect()->route('dashboard');
+
     }
-
-        // return redirect(RouteServiceProvider::HOME);
-
-        
+    protected function registered(Request $request, $user)
+    {
+        if( $user->role === 'admin') {
+            return redirect()->route('admin.dashboard');
+        } elseif ($user->role === 'conductor') {
+            return redirect()->route('conductor.dashboard');
+        } else {
+            return redirect()->route('cliente.dashboard');
+        }
     }
 }
